@@ -60,7 +60,7 @@ def plot(df_coords):
     '''
 
     '''
-    '''
+
     figure = tiles * df_coords.hvplot.points(
        x='easting', y='northing', size=4, c='Dataset ID',
        #color=dim('easting'),
@@ -70,6 +70,23 @@ def plot(df_coords):
        width=900, height=600, cmap=cc.b_glasbey_bw,
        legend='bottom',
        datashade=False,
+       title='ERDDAP Co-Locate Results'
+    )
+    '''
+
+    '''
+    '''
+    figure = tiles * df_coords.hvplot.points(
+       x='easting', y='northing', size=4, c='Dataset ID',
+       #color=dim('easting'),
+       #alpha=0.5, hover_alpha=1,
+       #s='Dataset ID', scale=10,
+       hover_cols=['Dataset ID', 'dataset_count'],
+       width=900, height=600, color_key=cc.b_glasbey_bw,
+       legend='bottom',
+       datashade=True,
+       dynspread=True,
+       rasterize=True,
        title='ERDDAP Co-Locate Results'
     )
 
