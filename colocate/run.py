@@ -2,22 +2,32 @@ import argparse
 import json
 import requests
 import pandas as pd
+from joblib import Parallel, delayed
+import multiprocessing
 
 from .erddap_query import query, get_coordinates
 
 def ui_query(kw):
     servers = get_erddaps()
 
-    all_datasets=pd.DataFrame()
-
     print("\n\n********Run ERDDAP Advanced Search via erddapy to find datasets***********")
     print("Total ERDDAPs: {}".format(len(servers)))
 
-    # for the moment, we bypass the 'main' ERDDAP server (https://coastwatch.pfeg.noaa.gov/erddap - #1 in Awesome ERDDAP list):
-    for server in servers[1:]:
-        #print("url: {}".format(server['url']))
+    def do_query(server):
         ds = query(server['url'], **kw)
-        all_datasets = pd.concat([all_datasets,ds])
+        return ds
+            
+    num_cores = multiprocessing.cpu_count()
+    #print(f"core count: {num_cores}")
+    ds_results = Parallel(n_jobs=num_cores)(
+        # for the moment, we bypass the 'main' ERDDAP server (https://coastwatch.pfeg.noaa.gov/erddap - #1 in Awesome ERDDAP list):
+        delayed(do_query)(server) for server in servers[1:]
+    )
+    
+    all_datasets=pd.DataFrame()
+    for ds in ds_results:
+        all_datasets = pd.concat([all_datasets,ds]) 
+    
     return all_datasets
 
 
