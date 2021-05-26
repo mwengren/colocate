@@ -18,11 +18,16 @@ def ui_query(kw):
         return ds
             
     num_cores = multiprocessing.cpu_count()
-    #print(f"core count: {num_cores}")
-    ds_results = Parallel(n_jobs=num_cores)(
-        # for the moment, we bypass the 'main' ERDDAP server (https://coastwatch.pfeg.noaa.gov/erddap - #1 in Awesome ERDDAP list):
-        delayed(do_query)(server) for server in servers[1:]
-    )
+    print(f"core count: {num_cores}")
+    try:
+        ds_results = Parallel(n_jobs=num_cores, backend='threading', timeout=20)(
+            # for the moment, we bypass the 'main' ERDDAP server (https://coastwatch.pfeg.noaa.gov/erddap - #1 in Awesome ERDDAP list):
+            delayed(do_query)(server) for server in servers[1:]
+        )
+    #except TimeOutError as e:
+    except Exception as e:
+        print(str(e))
+        pass
     
     all_datasets=pd.DataFrame()
     for ds in ds_results:
